@@ -3,6 +3,6 @@ This repository is an attempt to collect all the functions created in order to a
 This is an initiative carried out by students, it is unofficial.
 
 # Before the  download of the file, make sure that "main.R" and "bond_functions.R" are stored in the same working directory. 
-before running the code use setwd("/yourbeautifulpath") in case you want work in the same directory
+before running the code use setwd("/yourbeautifulpath") in case you want work in the same directory.
 
-I do not know if there are mistakes, in case write me on whatsapp 
+I do not know if there are mistakes, in case write me on whatsapp.
