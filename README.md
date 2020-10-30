@@ -1,5 +1,5 @@
 # portfolio_optimization_course_MEF20
-This repository is an attempt to create and collect functions in order to apply portfolio optimization problems tudied during the lessons of Portfolio Optimization in MEF Mater's degree offered by University of Milan.
+This repository is an attempt to create and collect functions in order to apply portfolio optimization problems studied during the lessons of Portfolio Optimization in MEF Mater's degree offered by University of Milan.
 
 This is an initiative carried out by a student, it is unofficial. I am working also on a package for all these functions.
 
