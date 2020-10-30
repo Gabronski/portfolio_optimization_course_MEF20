@@ -12,11 +12,11 @@ It is divided in 4 different approaches to the maximization problem:
 
 1) Function for the estimation of the present value and one for each sensitivity measures (duration and convexity).
 
-2) Function in order to estimate all the previous parameters for each bond you want in your portfolio
+2) Function in order to estimate all the previous parameters for each bond you want in your portfolio,
   
    - maximization problem: maximize the convexity of each bond by its weight on the portfolio, given a target duration.
 
-3) Function in case of real data coming from excel file,in this case we still do not have the duration and the convexity of our bonds, the maximization problem has the same scope as the previous
+3) Function in case of real data coming from excel file,in this case we still do not have the duration and the convexity of our bonds, the maximization problem has the same scope as the previous.
 
 4) Function in case of real data coming from excel where we have the end price, convexity and duration on a specific day, the maximization problem has the same scope as the previous.
 
