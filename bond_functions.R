@@ -160,7 +160,7 @@ Bpricing2 <- function(dataset,interest_rate){
   Convexity_yearly <-  c()
   
   for (i in 1:length(sheets)){
-    cash_flows[[i]] = c(dataset[[i]]$Interest/1000 + dataset[[i]]$Principal)
+    cash_flows[[i]] = c(dataset[[i]]$Interest/1000 + dataset[[i]]$Principal/1000)
     discounted_cf_day[[i]]= c(cash_flows[[i]]/((1+interest_rate)^dataset[[i]]$TTM_DAY))
     discounted_cf_year[[i]] = c(cash_flows[[i]]/(1+interest_rate)^dataset[[i]]$TTM_YB)
     Price_daily[[i]] <- c(sum(discounted_cf_day[[i]]))
