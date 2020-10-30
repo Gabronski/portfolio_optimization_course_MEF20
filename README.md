@@ -7,7 +7,7 @@ Before the  download of the file, make sure that "main.R" and "bond_functions.R"
 Before running the code use setwd("/yourpath") in case you want work in the same directory.
 
 # main_attempt file:
-It is divided in 4 different approaches to the maximization problem:
+It is divided in 4 different approaches to the maximization of a bond portfolio problem, given a target duration:
 
 1) Function for the estimation of the present value and one for each sensitivity measures (duration and convexity).
 
