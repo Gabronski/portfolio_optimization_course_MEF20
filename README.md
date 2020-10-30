@@ -20,4 +20,7 @@ It is divided in 4 different approaches to the maximization problem:
 
 4) Function in case of real data coming from excel where we have the end price, convexity and duration on a specific day, the maximization problem has the same scope as the previous.
 
+# bond_functions file:
+It contains all the functions we want to run. 
+
 # this repository is a work in progress, the files may be changed in order to modify errors or add functions. 
