@@ -22,6 +22,7 @@ It is divided in 4 different approaches to the maximization of a bond portfolio 
 # bond_functions file:
 It contains all the functions we want to run. 
 
-# this repository is a work in progress, the files may be changed in order to modify errors or add functions. 
+# this repository is a work in progress, the files may be changed in order to modify errors or add functions.
+# Right now I am working on Asset Portfolio Allocation in a static context (e.g. Markowitz portfolio theory and the efficient frontier)
 
 I do not know if there are mistakes, in case write me on whatsapp.
