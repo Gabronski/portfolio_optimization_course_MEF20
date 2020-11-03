@@ -3,7 +3,7 @@ This repository is an attempt to create and collect functions in order to apply 
 
 This is an initiative carried out by a student, it is unofficial. I am working also on a package for all these functions.
 
-Before the  download of the file, make sure that "main.R" and "bond_functions.R" are stored in the same working directory. 
+Before the  download of the file, make sure files are stored in the same working directory. 
 Before running the code use setwd("/yourpath") in case you want work in the same directory.
 
 # main_attempt file:
