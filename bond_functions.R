@@ -52,7 +52,7 @@ Bpricing <- function(face_value,maturities, coupon, interest_rate){
   
   #function created to embed all the sensitivity measures and data required in order to compute 
   # present value, duration and convexity of a bond
-  
+  #richiamare funzione elementare
   cash_flow=c(c(rep(coupon,length(maturities)-1),face_value+coupon))
   Discounted_Cash_Flow = cash_flow/(1+interest_rate)^maturities
   Price <- sum(Discounted_Cash_Flow)
@@ -73,19 +73,23 @@ Bpricing <- function(face_value,maturities, coupon, interest_rate){
   
 }
 
-maximization_problem <- function(MyBondPricing,MyBond2Pricing,MyBond3Pricing,Duration_desired) {
+maximization_problem <- function(MyBondPricing,MyBond2Pricing,MyBond3Pricing,Duration_desired,initial_wealth) {
   
   # Bond_Dur: for each Bond's pricing we pick the duration
   # Bond_Conv: for each Bond's pricing we pick the convexity
   # Durations: we build a vector containing all the bonds' durations
   # Convexities: we build a vector containing all the bonds' convexities
   
+  Bond1_Price <- MyBondPricing$total_pricing_bond[2]
   Bond1_Conv <- MyBondPricing$total_pricing_bond[4]
   Bond1_Dur  <- MyBondPricing$total_pricing_bond[3]
-  Bond2_Conv <- MyBond2Pricing$total_pricing_bond[4]
+  Bond2_Price <- MyBond2Pricing$total_pricing_bond[2]
   Bond2_Dur  <- MyBond2Pricing$total_pricing_bond[3]
-  Bond3_Conv <- MyBond3Pricing$total_pricing_bond[4]
+  Bond2_Conv <- MyBond2Pricing$total_pricing_bond[4]
+  Bond3_Price <- MyBond3Pricing$total_pricing_bond[2]
   Bond3_Dur  <- MyBond3Pricing$total_pricing_bond[3]
+  Bond3_Conv <- MyBond3Pricing$total_pricing_bond[4]
+  Present_values <- c(Bond1_Price,Bond2_Price,Bond3_Price)
   Durations <- c(Bond1_Dur,Bond2_Dur,Bond3_Dur)
   Convexities <- c(Bond1_Conv,Bond2_Conv,Bond3_Conv)
   #maximization problem
@@ -97,15 +101,15 @@ maximization_problem <- function(MyBondPricing,MyBond2Pricing,MyBond3Pricing,Dur
   f.rhs <-c(1,Duration_desired)
   w=lp (direction="max", f.obj, f.con, f.dir, f.rhs)$solution
   w #optimal weights determined by the maximization problem
-  wealth=MyBondPricing$total_pricing_bond[2]*w[1]+MyBond2Pricing$total_pricing_bond[2]*w[2]+MyBond3Pricing$total_pricing_bond[2]*w[3]
-   #wealth we reach if we invest using the weights obtained with the maximization problem
+  #how much units we should buy
+   optimal_units = w*Present_values/initial_wealth 
   
-  return(list(Convexities=Convexities, Durations=Durations,optimal_weights=w,wealth=wealth))
+  return(list(Present_values=Present_values,Convexities=Convexities, Durations=Durations,optimal_weights=w,optimal_units=optimal_units ))
 }
   
 #maximization problem using Bpricing function n times
 
-maximization_problem2 <- function(...,Duration_desired) {
+maximization_problem2 <- function(...,Duration_desired,initial_wealth) {
   # in this case we try to run the function without limiting the number of Bonds' pricing. In this way we can construct a 
   #portfolio with n bonds
   # x: we construct a vector from the lsit of Bonds we have
@@ -133,10 +137,10 @@ maximization_problem2 <- function(...,Duration_desired) {
   f.rhs <-c(1,Duration_desired)
   w=lp (direction="max", f.obj, f.con, f.dir, f.rhs)$solution #this function gives us the optimal weights according to the
   # maximization problem
+  #how much units we should buy
+  optimal_units = w*Bonds_prices/initial_wealth 
 
-  wealth=sum(Bonds_prices[1:n]*w[1:n]) #wealth we are able to reach if we invest on the number of bonds using the weights
-  
-  return(list(Bonds_prices=Bonds_prices,Durations=Durations,Convexities=Convexities,optimal_weights=w,wealth=wealth))
+  return(list(Bonds_prices=Bonds_prices,Durations=Durations,Convexities=Convexities,optimal_weights=w,optimal_units=optimal_units))
 }
 
 #Bpricing with dataset
@@ -144,48 +148,39 @@ maximization_problem2 <- function(...,Duration_desired) {
 
 Bpricing2 <- function(dataset,interest_rate){
   
-  dataset <- dataset
+  dataset <- Mydataset
   discounted_cf_year <- c()
   discounted_cf_day <- c()
   cash_flows <- c()
   Price_yearly <- c()
   Price_daily <- c()
-  tw_day <- c()
   tw_year <- c()
+  tw_day <- c()
   Duration_daily <- c()
   Duration_yearly  <- c()
   t2w_daily <-  c()
   t2w_yearly  <- c()
   Convexity_daily <- c()
   Convexity_yearly <-  c()
-  
   for (i in 1:length(sheets)){
-    cash_flows[[i]] = c(dataset[[i]]$Interest/1000 + dataset[[i]]$Principal/1000)
+    #still working on measurement of cash flows
+    cash_flows[[i]] = c(dataset[[i]]$Interest + dataset[[i]]$Principal)
     discounted_cf_day[[i]]= c(cash_flows[[i]]/((1+interest_rate)^dataset[[i]]$TTM_DAY))
     discounted_cf_year[[i]] = c(cash_flows[[i]]/(1+interest_rate)^dataset[[i]]$TTM_YB)
     Price_daily[[i]] <- c(sum(discounted_cf_day[[i]]))
     Price_yearly[[i]] <- c(sum(discounted_cf_year[[i]]))
     tw_day[[i]] <- c(dataset[[i]]$weights*dataset[[i]]$TTM_DAY)
     tw_year[[i]] <- c(dataset[[i]]$weights*dataset[[i]]$TTM_YB)
-    
     Duration_daily[[i]] <- c((sum(tw_day[[i]]))*(sum(dataset[[i]]$weights)))
-    
     Duration_yearly[[i]] <- c((sum(tw_year[[i]]))*(sum(dataset[[i]]$weights)))
-    
     t2w_daily[[i]] <- c(sum(((dataset[[i]]$TTM_DAY)^2)*dataset[[i]]$weights))
     t2w_yearly[[i]] <- c(sum(((dataset[[i]]$TTM_YB)^2)*dataset[[i]]$weights))
     Convexity_daily[[i]] <- c(t2w_daily[[i]] + Duration_daily[[i]])
     Convexity_yearly[[i]] <- c(t2w_yearly[[i]] + Duration_yearly[[i]])
-  }
   
+  } 
   
-  Duration_daily_boh <- c(sum(tw_year[[2]]*dataset[[2]]$weights))
-  Duration_daily_boh
-  Convexity_daily_boh <- c(t2w_daily[[2]]+Duration_daily[[2]])
-  Convexity_daily_boh
-  
-  matrix1 = c()
-  
+  matrix1 <- c()
   for (i in 1: length(sheets)){
     
     matrix1[[i]] = matrix(c(cash_flows[[i]],dataset[[i]]$weights,tw_day[[i]],discounted_cf_day[[i]],
@@ -202,15 +197,16 @@ Bpricing2 <- function(dataset,interest_rate){
                             Convexity_daily[i],Convexity_yearly[i]),nrow=1,ncol=7,
                           dimnames = list("final result",c("Price_day","Price_year","check_weights","Duration_day","Duration_year",
                                                            "Convexity_day","Convexity_year")))
-  }
+  } 
   
   total = list(values_for_each_maturity=matrix1,total_values=matrix2)
+  total
   return(total) 
 }
 
 #maximization problem with datataset
 
-maximization_with_dataset <- function(...,Duration_desired_daily,Duration_desired_yearly) {
+maximization_with_dataset <- function(...,Duration_desired_daily,Duration_desired_yearly,initial_wealth_day,initial_wealth_year) {
   
   #dataset: variable which include all the inputs we give to the function and we name it 
   #price_day: vector which includes all data of our dataset for each sheet in position [1]
@@ -254,10 +250,9 @@ maximization_with_dataset <- function(...,Duration_desired_daily,Duration_desire
   w=lp (direction="max", f.obj, f.con, f.dir, f.rhs)$solution #this function gives us the optimal weights according to the
   # maximization problem considering daily data
   w
-  wealth=sum(sensitivity_measures$Price_day[1:length(sheets)]*w[1:length(sheets)]) #wealth we are able to reach if we invest on the number of bonds using the weights
-  
+  optimal_units = w*price_day/initial_wealth_day 
   daily_results = list(Bonds_prices_daily=price_day,Durations_daily=Duration_day,Convexities_daily=Convexity_day,
-                       optimal_weights=w,wealth_daily=wealth)
+                       optimal_weights=w, optimal_units=optimal_units)
 
   #maximization problem using yearly data
   C_t1 = sensitivity_measures$Convexity_year #we require the convexity vector in order to construct the objective function C*w
@@ -269,10 +264,9 @@ maximization_with_dataset <- function(...,Duration_desired_daily,Duration_desire
   f.rhs1 <-c(1,Duration_desired_yearly)
   w1=lp (direction="max", f.obj1, f.con1, f.dir1, f.rhs1)$solution #this function gives us the optimal weights according to the
   # maximization problem with yearly data
-  wealth1=sum(sensitivity_measures$Price_year[1:length(sheets)]*w[1:length(sheets)]) #wealth we are able to reach if we invest on the number of bonds using the weights
-  
+  optimal_units_y = w*price_day/initial_wealth_year 
   yearly_results = list(Bonds_price_yearly = price_year, Duration_yearly = Duration_year, Convexity_yearly = Convexity_year,
-                        optimal_weights = w1, wealth_yearly = wealth1)
+                        optimal_weights = w1, optimal_units_yearly=optimal_units_y)
   #vector of lists that represents the daily results and yearly results
   results = c(daily_results, yearly_results)
   return(results)
@@ -281,7 +275,7 @@ maximization_with_dataset <- function(...,Duration_desired_daily,Duration_desire
 
 #we now build a function in the case where we already have convexity price and duration of the bonds
 
-maximization_problem_given <- function(..., Duration_desired){
+maximization_problem_given <- function(..., Duration_desired,initial_wealth){
   
   #dataset: variable which include the data input used by the user
   dataset <- c(...)
@@ -290,8 +284,7 @@ maximization_problem_given <- function(..., Duration_desired){
   Price <- dataset$PRICE
   Bonds <- dataset$BOND
   n=length(Bonds)
-  sensitivity_measures= matrix(c(Price,Durations,Convexities),nrow=length(Bonds),ncol=3, byrow = TRUE,
-                               dimnames = list(c(Bonds),c("Price", "Durations", "Convexities")))
+  
   #maximization problem
   C_t = t(Convexities) #we require the convexity vector in order to construct the objective function C*w
   f.obj <- C_t #c_t * w  objective function
@@ -301,13 +294,7 @@ maximization_problem_given <- function(..., Duration_desired){
   f.dir <- c("=","=")
   f.rhs <-c(1,Duration_desired)
   w=lp (direction="max", f.obj, f.con, f.dir, f.rhs)$solution #this function gives us the optimal weights according to the
-  wealth=sum(Price[1:n]*w[1:n]) #wealth we are able to reach if we invest on the number of bonds using the weights
-  results = list(Price=Price,Durations=Durations,Convexities=Convexities,optimal_weights=w,wealth=wealth)
+  optimal_units= w*Price/initial_wealth
+  results = list(Price=Price,Durations=Durations,Convexities=Convexities,optimal_weights=w,optimal_units=optimal_units)
   return(results)
 }
-
-
-
-
-
-
