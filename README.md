@@ -27,8 +27,9 @@ script were I try to run the functions created in the "asset_functions.R" file. 
 
 # asset_functions.R (work in progress):
 file containing 2 functions:
-  1-) assetportfolio_optm which run a quadratic programming problem and minimizes the variance of our portfolio, given a target expected return;
-  2-) mean_var_front which construct a Markowitz frontier using the minimization problem used before.
+
+  1) assetportfolio_optm which run a quadratic programming problem and minimizes the variance of our portfolio, given a target expected return;
+  2) mean_var_front which construct a Markowitz frontier using the minimization problem used before.
   
  In the first function, you can select an other constraint on weights of your portfolio picking a minimum value for the weights.
 # this repository is a work in progress, the files may be changed in order to modify errors or add functions.
