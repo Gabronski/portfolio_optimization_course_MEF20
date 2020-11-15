@@ -26,9 +26,8 @@ source('asset_functions.R')
 
 install.packages("quantmod")
 library(quantmod)
-install.packages("lpSolve")
-library(lpSolve)
 library(readxl)
+#exercise with professor's excel data
 dataset_excel <- read_xlsx("~/R/dati_prof_assets.xlsx")
 dataset_excel
 dataset_excel <- data.frame(dataset_excel[2:5])
@@ -36,47 +35,70 @@ dataset_excel
 symbols <- c("Eni","Fiat","Unicredit","TIM")
 
 weights <- c(0.25,0.25,0.25,0.25) 
-
-
 Myminimization_problem1 <- assetportfolio_optm(dataset_excel,expected_return_target = 0.0002,weights = weights)
-Myminimization_problem1
+
+
+install.packages("ggplot2")
+library(ggplot2)
+
+undebug(mean_var_front)
+#the function mean_var_front helps you in building the mean-variance frontier
+mean_var_frontier <- mean_var_front(Myminimization_problem1, expected_return_target = 0.0002)
+#you can also set the interval where you want your function plotted
+mean_var_frontier<- mean_var_front(Myminimization_problem1,expected_return_target = 0.0002,value_min = -0.001,value_max=0.0005,interval=0.00001) 
 #we use this function in case we want to constraint also the minimum value of our weights
 Myminimization_problem2 <- assetportfolio_optm(dataset_excel,expected_return_target = 0.0002,weights = weights,diag=4,value_desired = 0.1)
-Myminimization_problem2
 
-
-#maximization problem: the objective function is weights*expected returns with a targeted variacne
-Mymaximizationproblem1 <- assetportfolio_optm_2(dataset_excel,variance_desired = 0.0003)
-Mymaximizationproblem1
-#maximization problem with weights greater than 0.1
-Mymaximizationproblem2 <- assetportfolio_optm_2(dataset_excel,variance_desired = 0.0003,value = 0.1,diag = 4)
-Mymaximizationproblem2
 
 # if you want to use data from yahoo finance and pick whatever asset you want
-# I picked: American Airlines, Apple, Microsofr, Vanguard ETF Emerging Markets, FCA (US), Unicredit (FTSEMIB), TIM (FTSEMIB)
+# I picked: American Airlines, Apple, Microsoft, Vanguard ETF Emerging Markets, FCA (US), Unicredit (FTSEMIB), TIM (FTSEMIB)
 symbols <- c("AAL","AAPL","MSFT","VWO","E","FCAU","UCG.MI","TIT.MI")
 # I use monthly data because, using daily data and choosing US and EU assets, we end with different days and therefore
 # different rows.
 dataset <- getSymbols.yahoo(symbols, from = "2016-01-01", to="2019-06-06",periodicity = "monthly",env = (.GlobalEnv))
 # I decided to select adjusted prices but you can chose also close price
+#ha senso close price, adjusted = aggiustato con decuratazione dividend yield
 dataset<- data.frame(AAL$AAL.Adjusted,AAPL$AAPL.Adjusted,MSFT$MSFT.Adjusted,VWO$VWO.Adjusted,E$E.Adjusted,
                      FCAU$FCAU.Adjusted,UCG.MI$UCG.MI.Adjusted,TIT.MI$TIT.MI.Adjusted)
-dataset
+
 weights <- c(0.1,0.2,0.1,0.1,0.2,0.1,0.1,0.1) 
 #we use this in case we want to constraint also the minimum value of our weights
 Myminimizationproblem3 <- assetportfolio_optm(dataset,expected_return_target = 0.0002,weights = weights,diag=8,value_desired = 0.05)
 
 Myminimizationproblem4 <- assetportfolio_optm(dataset,expected_return_target = 0.002,weights = weights)
 
-Mymaximizationproblem3 <- assetportfolio_optm_2(dataset,variance_desired = 0.03)
 
-Mymaximizationproblem4 <- assetportfolio_optm_2(dataset,variance_desired = 0.003,diag= 8 ,value = 0.001)#funzione creata
 
-#example of for loop in case you have just a bond. This is were I started the construction of my functions
 
-#myreturns <- list()
-#i=row(dataset)
-#for (i in 1:length(row(dataset))){
-# myreturns[i] <- c(((dataset[sum(i+1)]-dataset[i])/dataset[i]))
-# myreturns <- na.omit(myreturns)
-#myreturns <- matrix(myreturns)}
+
+
+
+
+#analytical procedure to find the optimal portfolio
+
+mu = c(port_optmized$expected_return_each_asset)
+mu_t = t(t(mu))
+var = port_optmized$variance_covariance_matrix
+v_1 = solve(port_optmized$variance_covariance_matrix)
+ones=rep(1,length(mu))
+ones_t = t(t(ones))
+#now find A,B,C,D
+A = as.vector(ones%*%v_1%*%mu_t)
+B = as.vector(mu%*%v_1%*%mu_t)
+C = as.vector(ones%*%v_1%*%ones_t)
+D = as.vector((B*C) - A^2)
+# I need now h and g to be found in order to construct my frontier equation w = return_portfolio*h + g
+h = C/D*v_1%*%mu_t - A/D*v_1%*%ones #it should be equal to 0 or near 0
+g=B/D*v_1%*%ones - A/D*v_1%*%mu_t #it should be equal to 1
+#minimum-variance portfolio
+mu_p <- A/C 
+sigma <- 1/C 
+minimum_portfolio <- c(sigma=sigma,min_mu=mu_p)
+#optimal weights when expected return of the portfolio is 0.02
+exp_ret = 0.02
+sigma_2 <- C/D*(exp_ret - A/C)^2 + 1/C
+sigma <- sqrt(sigma_2)
+optimal_weights <- 0.0002*h + g
+optimal_weights #weights should be equal to the weights found in the minimization problem
+port_optmized <- Myminimization_problem1        #myminimizationproblem
+port_optmized$optimal_weights
