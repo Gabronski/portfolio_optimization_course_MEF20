@@ -28,11 +28,11 @@ script were I try to run the functions created in the "asset_functions.R" file. 
 # asset_functions.R (work in progress):
 file containing 2 functions:
   1-) assetportfolio_optm which run a quadratic programming problem and minimizes the variance of our portfolio, given a target expected return;
-  2-) asssetportfolio_optm_2 solve a linear programming problem and maximize the expected return of our portfolio, given a target variance.
+  2-) mean_var_front which construct a Markowitz frontier using the minimization problem used before.
   
- In both cases you can select an other constraint on weights of your portfolio picking a minimum value for the weights.
+ In the first function, you can select an other constraint on weights of your portfolio picking a minimum value for the weights.
 # this repository is a work in progress, the files may be changed in order to modify errors or add functions.
-Right now I am working on Asset Portfolio Allocation in a static context (e.g. Markowitz portfolio theory and the efficient frontier)
+Right now I am working on Asset Portfolio Allocation in a static context (e.g. Optimal portfolio using a risk free asset, CAPM, Finite Binomial Market Model using martingale measures)
 
 I do not know if there are mistakes, in case write me on whatsapp.
 
