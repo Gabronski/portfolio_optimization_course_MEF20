@@ -41,7 +41,6 @@ Myminimization_problem1 <- assetportfolio_optm(dataset_excel,expected_return_tar
 install.packages("ggplot2")
 library(ggplot2)
 
-undebug(mean_var_front)
 #the function mean_var_front helps you in building the mean-variance frontier
 mean_var_frontier <- mean_var_front(Myminimization_problem1, expected_return_target = 0.0002)
 #you can also set the interval where you want your function plotted
@@ -67,6 +66,7 @@ Myminimizationproblem3 <- assetportfolio_optm(dataset,expected_return_target = 0
 
 Myminimizationproblem4 <- assetportfolio_optm(dataset,expected_return_target = 0.002,weights = weights)
 
+mean_var_frontier<- mean_var_front(Myminimizationproblem4,expected_return_target = 0.0004,value_min = -0.001,value_max=0.00061,interval=0.00001) 
 
 
 
@@ -75,11 +75,11 @@ Myminimizationproblem4 <- assetportfolio_optm(dataset,expected_return_target = 0
 
 
 #analytical procedure to find the optimal portfolio
-
-mu = c(port_optmized$expected_return_each_asset)
+port_optimized <- Myminimization_problem1
+mu = c(port_optimized$expected_return_each_asset)
 mu_t = t(t(mu))
-var = port_optmized$variance_covariance_matrix
-v_1 = solve(port_optmized$variance_covariance_matrix)
+var = port_optimized$variance_covariance_matrix
+v_1 = solve(port_optimized$variance_covariance_matrix)
 ones=rep(1,length(mu))
 ones_t = t(t(ones))
 #now find A,B,C,D
@@ -100,5 +100,44 @@ sigma_2 <- C/D*(exp_ret - A/C)^2 + 1/C
 sigma <- sqrt(sigma_2)
 optimal_weights <- 0.0002*h + g
 optimal_weights #weights should be equal to the weights found in the minimization problem
-port_optmized <- Myminimization_problem1        #myminimizationproblem
+# check weights with myminimizationproblem
 port_optmized$optimal_weights
+
+
+#############################
+#assignment functions
+#############################
+
+install.packages("quantmod")
+library(quantmod)
+install.packages("nloptr") 
+library(nloptr)
+
+symbols <- c("ENI.MI","FCA.MI","UCG.MI")  
+# I use monthly data because, using daily data and choosing US and EU assets, we end with different days and therefore
+# different rows.
+dataset <- getSymbols.yahoo(symbols, from = "2018-08-03", to="2018-10-30",periodicity = "daily",env = (.GlobalEnv))
+# I decided to select adjusted prices but you can chose also close price
+#ha senso close price, adjusted = aggiustato con decuratazione dividend yield
+dataset<- data.frame(ENI.MI$ENI.MI.Close,FCA.MI$FCA.MI.Close ,UCG.MI$UCG.MI.Close)
+
+target_r <- 0.05
+myweights <- c(10,-8,-1)
+myfunction1 <- assetportfolio_optm2(dataset,target_r,myweights)
+
+prova_analytical <- port_optm_analytical(dataset,target_r) #if you want to see more results from the analytical formula ---> prova_analytical$
+
+#if we add an other asset e.g. ISP.MI Intesa San Paolo - Milano
+# it works only with the analytical formula
+symbols <- c("ENI.MI","FCA.MI","UCG.MI","ISP.MI")
+dataset <- getSymbols.yahoo(symbols, from = "2018-08-03", to="2018-10-30",periodicity = "daily",env = (.GlobalEnv))
+dataset <- data.frame(ENI.MI$ENI.MI.Close,FCA.MI$FCA.MI.Close ,UCG.MI$UCG.MI.Close, ISP.MI$ISP.MI.Close)
+
+#we need to write that function
+
+prova_weights <- c(0.25,0.25,0.25,0.25)
+myfunction1 <- assetportfolio_optm2(dataset,target_r,prova_weights)
+#myfunction1$optimal_weights
+prova_analytical <- port_optm_analytical(dataset,expected_return_target = 0.05)
+
+

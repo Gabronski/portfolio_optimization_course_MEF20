@@ -52,14 +52,14 @@ assetportfolio_optm <- function(dataset,expected_return_target,weights,diag=NULL
   return_portfolio <- sum(x*mean_1)
   results =list(expected_return_target=expected_return_target, returns = myreturns, variance_covariance_matrix = var_cov, 
               expected_return_each_asset = mean_1, optimal_weights=x,return_portfolio_check = return_portfolio)
-  
+  print(results)
   return(results)
   }
 
 #mean-variance frontier construction
 mean_var_front <- function(myminimizationproblem,expected_return_target,value_max=NULL,value_min=NULL,interval=NULL){
    expected_return_target <- expected_return_target
-   port_optmized <- Myminimization_problem1          #myminimizationproblem
+   port_optmized <- myminimizationproblem    #myminimizationproblem
    #vector of expected returns from the minimization problem
    mu = c(port_optmized$expected_return_each_asset)
    mu_t = t(t(mu))
@@ -106,6 +106,7 @@ mean_var_front <- function(myminimizationproblem,expected_return_target,value_ma
       for (i in 1:length(sigma2p)){
          sigma_port[i] <- c(sqrt(sigma2p[i]))}
          mean_var_values <- data.frame(cbind("sigma_port"=sigma_port,"exp_r_port"=vector_exp_ret))
+      print(mean_var_values)
       return(mean_var_values)
    }
    
@@ -122,5 +123,128 @@ mean_var_front <- function(myminimizationproblem,expected_return_target,value_ma
       xlab("Standard Deviations") + ylab("Expected Returns") 
    results=list(final_results=x,mean_variance_frontier = mean_variance_front, minimum_portfolio=min_port,
                 efficient_portfolio = efficient_portfolio_point)
+   print(results)
    return(results)}
+
+
+
+#functions for the assignment using nloptr package
+assetportfolio_optm2 <- function(dataset,expected_return_target,weights){
+   
+   mydata <- dataset
+   exp_target <- expected_return_target
+   w0 <- weights
+   
+   #how to get the returns from our dataset
+   myreturns <- matrix(nrow=length(row(mydata[1]))-1, ncol =length(mydata),
+                       dimnames=list(1:(length(row(mydata[1]))-1),symbols))
+   for (j in 1:length(mydata)){
+      for (i in 2:length(row(mydata[j]))){
+         
+         myreturns[sum(i-1),j]<- matrix(((mydata[i,j] - mydata[i-1,j])/mydata[i-1,j]))
+      }
+   }
+   myreturns <- data.frame(myreturns)
+   #variance - covariance matrix
+   var_cov = var(myreturns)
+   #vector of expected returns
+   mean_1 <-matrix(nrow=1,ncol=dim(myreturns)[2]) 
+   for (i in 1:dim(myreturns)[2]){
+      mean_1[[i]]<- c(mean(myreturns[[i]]))
+      
+   }
+   #maximization problem using nloptr package
+   #objective function
+   eval_f <- function( w ){
+      return( 0.5*t(w)%*%var_cov%*%w)}
+   #function for the gradient of the objective function
+   grad_fun <- function( w ){return(
+      t(w)%*%var_cov)}
+   
+   #function for the constraints of my maximization problem
+   eval_g_eq <- function( w ){
+      return("constraint" =  cbind(sum(w*mean_1) - exp_target, sum(w) - 1))
+   }
+   #function for the jacobian matrix of my constraints
+   eval_jac_g <- function( w ){
+      return("gradient"= rbind(mean_1,c(rep(1,length(w0)))
+      ))}
+   
+   local_opts <- list( "algorithm" = "NLOPT_LD_SLSQP",  
+                       "xtol_rel" = 1.0e-7,     "maxeval" = 1000)
+   opts <- list( "algorithm" = "NLOPT_LD_SLSQP",
+                 "xtol_rel" = 1.0e-7,
+                 "maxeval" = 1000,
+                 "local_opts" = local_opts)
+   
+   res <- nloptr( x0=w0,
+                  eval_f=eval_f,
+                  eval_grad_f = grad_fun,
+                  eval_g_eq=eval_g_eq,
+                  eval_jac_g_eq = eval_jac_g,
+                  opts=opts)
+   
+   results = list(returns=myreturns, variance_covariance_matrix = var_cov, expected_returns = mean_1, optimal_weights = res$solution)
+   print(results)
+   return(results)
+   
+}
+
+port_optm_analytical <- function(dataset,expected_return_target){
+   #the function returns the optimal weights after the quadratic minimization problem wehre:
+   # inputs:
+   # - dataset: matrix containing the prices of the assets we want to include in our portfolio
+   # - expected_return_target: numeric object which represent the desired expected return of our portfolio 
+   # - weights: vector containing the starting weights
+   mydata <- dataset
+   exp_ret <- expected_return_target
+   #how to get the returns from our dataset
+   myreturns <- matrix(nrow=length(row(mydata[1]))-1, ncol =length(mydata),
+                       dimnames=list(1:(length(row(mydata[1]))-1),symbols))
+   for (j in 1:length(mydata)){
+      for (i in 2:length(row(mydata[j]))){
+         
+         myreturns[sum(i-1),j]<- matrix(((mydata[i,j] - mydata[i-1,j])/mydata[i-1,j]))
+      }
+   }
+   myreturns <- data.frame(myreturns)
+   #variance-covariance matrix 
+   var_cov = var(myreturns)
+   #for loop that returns a vector of mean for our dataset 
+   mu <-matrix(nrow=1,ncol=dim(myreturns)[2])
+   for (i in 1:dim(myreturns)[2]){
+      mu[[i]]<- c(mean(myreturns[[i]]))
+      
+   }
+   
+   mu_t = t(mu)
+   var = var_cov
+   v_1 = solve(var_cov)
+   ones=rep(1,length(mu))
+   ones_t = t(t(ones))
+   #now find A,B,C,D
+   A = as.vector(ones%*%v_1%*%mu_t)
+   B = as.vector(mu%*%v_1%*%mu_t)
+   C = as.vector(ones%*%v_1%*%ones_t)
+   D = as.vector((B*C) - A^2)
+   # I need now h and g to be found in order to construct my frontier equation w = return_portfolio*h + g
+   h = C/D*v_1%*%mu_t - A/D*v_1%*%ones #it should be equal to 0 or near 0
+   check1=sum(h)
+   g=B/D*v_1%*%ones - A/D*v_1%*%mu_t #it should be equal to 1
+   check2 = sum(g) 
+   #minimum-variance portfolio
+   mu_p <- A/C 
+   sigma <- 1/C 
+   minimum_portfolio <- c(sigma=sigma,min_mu=mu_p)
+   sigma_2 <- C/D*(exp_ret - A/C)^2 + 1/C
+   sigma <- sqrt(sigma_2)
+   optimal_portfolio <- c(sigma=sigma,exp_ret=exp_ret)
+   optimal_weights <- exp_ret*h + g
+   
+   results = list(myreturns = myreturns, mean = mu, var_cov = var, sum_h=check1,sum_g = check2,
+                  minimum_portfolio=minimum_portfolio,optimal_portfolio=optimal_portfolio,optimal_weights=optimal_weights)
+   print(list(minimum_portfolio=minimum_portfolio, optimal_portfolio=optimal_portfolio, optimal_weights=optimal_weights))
+   return(results)
+   
+}
 
