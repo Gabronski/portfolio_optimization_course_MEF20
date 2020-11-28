@@ -32,6 +32,9 @@ file containing 2 functions:
 
   1) assetportfolio_optm which run a quadratic programming problem and minimizes the variance of our portfolio, given a target expected return;
   2) mean_var_front which construct a Markowitz frontier using the minimization problem used before.
+  3) functions used for the assignment:
+         -) function created in order to apply a minimization of the variance problem using nloptr package 
+         -) function on the same minimization but applying the analytical solution 
   
  In the first function, you can select an other constraint on weights of your portfolio picking a minimum value for the weights.
 # this repository is a work in progress, the files may be changed in order to modify errors or add functions.
