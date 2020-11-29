@@ -27,7 +27,7 @@ It contains all the functions we want to run.
 # main_asset.R:
 script were I try to run the functions created in the "asset_functions.R" file. Use "dati_prof_assets.xlsx" in the first example in order to check if the results are the same of those used by the professor
 
-# asset_functions.R (work in progress):
+# asset_functions.R:
 file containing 2 functions:
 
   1) assetportfolio_optm which run a quadratic programming problem and minimizes the variance of our portfolio, given a target expected return;
@@ -36,7 +36,18 @@ file containing 2 functions:
          -) function created in order to apply a minimization of the variance problem using nloptr package 
          -) function on the same minimization but applying the analytical solution 
   
- In the first function, you can select an other constraint on weights of your portfolio picking a minimum value for the weights.
+  In the first function, you can select an other constraint on weights of your portfolio picking a minimum value for the weights.
+  
+  
+  # main_binomial_model.R:
+  script were I try to run the functions created in the "binomial_model.R". Use "prof_cluster.xlsx" in the second example.
+  
+  # binomial_model.R:
+  file containing 2 functions:
+  1) Function which finds a uniperiodal binomial model and applies a maximization of the expected utility using the Martingale approach on it
+  2) Function which finds the finite state market model throughout a cluster analysis and then applies a maximization of the expected utility using the         Martingale approach on it
+  
+  
 # this repository is a work in progress, the files may be changed in order to modify errors or add functions.
 Right now I am working on Asset Portfolio Allocation in a static context (e.g. Optimal portfolio using a risk free asset, CAPM, Finite Binomial Market Model using martingale measures)
 
