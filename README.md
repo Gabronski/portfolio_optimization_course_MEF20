@@ -44,7 +44,7 @@ file containing 2 functions:
   
   # binomial_model.R:
   file containing 2 functions:
-  1) Function which finds a uniperiodal binomial model and applies a maximization of the expected utility using the Martingale approach on it
+  1) Function which finds an uniperiodal binomial model and applies a maximization of the expected utility using the Martingale approach on it
   2) Function which finds the finite state market model throughout a cluster analysis and then applies a maximization of the expected utility using the         Martingale approach on it
   
   
