@@ -17,7 +17,7 @@ It is divided in 4 different approaches to the maximization of a bond portfolio 
 
 3) Function in case of real data coming from excel file,in this case we still do not have the duration and the convexity of our bonds, the maximization problem has the same scope as the previous;
 
-4) Function in case of real data coming from excel where we have the end price, convexity and duration on a specific day, the maximization problem has the same scope as the previous.
+4) Function in case of real data coming from excel where we have the close price, convexity and duration on a specific day, the maximization problem has the same scope as the previous.
 
 5) Functions for the assignment applying the same problems above but with improvements
 
